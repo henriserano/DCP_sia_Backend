@@ -1,3 +1,8 @@
 .venv
 dcp_eval.egg-info/
+__pycache__/
+*.pyc
 .hf_cache/
+.git/
+.gitignore
+.DS_Store

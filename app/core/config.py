@@ -38,7 +38,7 @@ class Settings(BaseSettings):
 
     # Server
     host: str = Field(default="0.0.0.0")
-    port: int = Field(default=8000)
+    port: int = Field(default=8080)
 
     # API key security (optional)
     enable_api_key: bool = Field(default=False)

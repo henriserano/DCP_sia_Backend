@@ -5,17 +5,38 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dcp-eval"
 version = "0.1.0"
+requires-python = ">=3.12"
 dependencies = [
-  "fastapi>=0.110",
-  "uvicorn[standard]>=0.27",
-  "pydantic>=2.0",
-  "transformers>=4.40",
-  "torch",
-  "protobuf",
-  "sentencepiece",
-  "spacy",
+  "backports.tarfile",
+  "boto3",
+  "docx",
+  "httptools",
+  "importlib-metadata",
+  "jaraco.collections",
+  "fastapi",
+  "uvicorn[standard]",
+  "openpyxl",
+  "pdfminer-six",
+  "pdfplumber",
+  "pip-chill",
+  "pipdeptree",
+  "platformdirs",
   "presidio-analyzer",
   "presidio-anonymizer",
+  "protobuf",
+  "psycopg2-binary",
+  "pydantic-settings",
+  "pytesseract",
+  "python-multipart",
+  "tesseract",
+  "sentencepiece",
+  "sqlalchemy",
+  "tomli",
+  "torch",
+  "transformers",
+  "uvloop",
+  "watchfiles",
+  "websockets"
 ]
 
 [tool.setuptools]
