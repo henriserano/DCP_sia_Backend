@@ -10,6 +10,8 @@ from app.detectors.regex_detector import RegexDetector
 from app.detectors.presidio_detector import PresidioDetector
 from app.detectors.spacy_detector import SpacyDetector
 from app.detectors.hf_ner_detector import HFNerDetector
+from app.detectors.piiranha import PiiranhaDetector
+from app.detectors.gliner_small import GLiNERSmallDetector
 
 
 class Orchestrator:
@@ -25,6 +27,9 @@ class Orchestrator:
             "presidio": lambda: PresidioDetector(),
             "spacy": lambda: SpacyDetector(),
             "hf": lambda: HFNerDetector(),
+            "gliner-small": lambda: GLiNERSmallDetector(),
+            "piiranha": lambda: PiiranhaDetector(),
+            
         }
         self._instances: Dict[str, Any] = {}
 
@@ -144,7 +149,7 @@ class Orchestrator:
 
         for det_name in detectors:
             try:
-                det = self._get_detector(det_name)
+                det = self.get_detector(det_name)
                 spans = det.detect(text=text, language=language, min_score=min_score)
                 # option: vider le texte si return_text=False
                 if not return_text:

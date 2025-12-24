@@ -1,15 +1,17 @@
 from __future__ import annotations
-from typing import List, Dict
+from typing import List, Dict, Optional
 from app.detectors.base import BaseDetector
 from app.models.schemas import DcpSpan
 
-class HFNerDetector(BaseDetector):
-    name = "hf"
+class PiiranhaDetector(BaseDetector):
+    name = "piiranha"
 
-    def __init__(self, model: str = "Jean-Baptiste/camembert-ner", revision: str | None = None):
-        """
-        Tu peux remplacer par un modèle NER FR différent.
-        """
+    def __init__(
+        self,
+        model: str = "iiiorg/piiranha-v1-detect-personal-information",
+        label_map: Optional[Dict[str, str]] = None,
+        device: int = -1,  # cpu par défaut (Cloud Run)
+    ):
         try:
             from transformers import pipeline
         except Exception as e:
@@ -18,18 +20,19 @@ class HFNerDetector(BaseDetector):
         self.pipe = pipeline(
             "token-classification",
             model=model,
-            revision=revision,                 # optionnel mais recommandé
             aggregation_strategy="simple",
-            device=-1,                         # CPU (évite surprises)
-            local_files_only=True,             # ✅ interdit tout download
+            device=device,
         )
 
-        # mapping BIO/NER -> DCP labels (best-effort)
-        self.map: Dict[str, str] = {
-            "PER": "PERSON",
-            "LOC": "LOCATION",
-            "ORG": "ORG",
-            "MISC": "OTHER",
+        self.map = label_map or {
+            "GIVENNAME": "PERSON",
+            "SURNAME": "PERSON",
+            "PERSON": "PERSON",
+            "LOCATION": "LOCATION",
+            "ORGANIZATION": "ORG",
+            "EMAIL": "OTHER",
+            "TELEPHONENUM": "OTHER",
+            "SSN": "OTHER",
         }
 
     def detect(self, text: str, language: str = "fr") -> List[DcpSpan]:
@@ -38,17 +41,16 @@ class HFNerDetector(BaseDetector):
         for r in out:
             ent = r.get("entity_group") or r.get("entity") or "OTHER"
             label = self.map.get(ent, "OTHER")
-            score = float(r.get("score", 0.5))
             start, end = int(r["start"]), int(r["end"])
             spans.append(
                 DcpSpan(
                     start=start,
                     end=end,
-                    label=label,  # type: ignore
-                    score=score,
+                    label=label,
+                    score=float(r.get("score", 0.5)),
                     source=self.name,
                     text=text[start:end],
-                    metadata={"hf_entity": ent},
+                    metadata={"pii_type": ent},  # <-- granularité conservée ici
                 )
             )
         return spans

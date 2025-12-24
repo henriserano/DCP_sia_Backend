@@ -33,6 +33,7 @@ dependencies = [
   "sqlalchemy",
   "tomli",
   "torch",
+  "gliner",
   "transformers",
   "uvloop",
   "watchfiles",
