@@ -7,6 +7,9 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Dict, Optional
 
+from app.core.logging import get_logger
+from app.db.models import JobResult
+from app.db.session import SessionLocal
 
 class JobStatus(str, Enum):
     queued = "queued"
@@ -39,12 +42,14 @@ class JobQueue:
     def __init__(self):
         self._lock = threading.Lock()
         self._jobs: Dict[str, JobRecord] = {}
+        self._logger = get_logger(__name__)
 
     def create(self, *, kind: str, meta: Optional[Dict[str, Any]] = None) -> JobRecord:
         job_id = uuid.uuid4().hex
         rec = JobRecord(id=job_id, kind=kind, meta=meta or {})
         with self._lock:
             self._jobs[job_id] = rec
+        self._persist(rec)
         return rec
 
     def get(self, job_id: str) -> Optional[JobRecord]:
@@ -56,6 +61,7 @@ class JobQueue:
             job = self._jobs[job_id]
             job.status = JobStatus.running
             job.started_at = dt.datetime.now(dt.timezone.utc)
+        self._persist(job)
 
     def set_done(self, job_id: str, result: Dict[str, Any]) -> None:
         with self._lock:
@@ -63,6 +69,7 @@ class JobQueue:
             job.status = JobStatus.done
             job.result = result
             job.finished_at = dt.datetime.now(dt.timezone.utc)
+        self._persist(job)
 
     def set_error(self, job_id: str, error: str) -> None:
         with self._lock:
@@ -70,3 +77,35 @@ class JobQueue:
             job.status = JobStatus.error
             job.error = error
             job.finished_at = dt.datetime.now(dt.timezone.utc)
+        self._persist(job)
+
+    def _persist(self, job: JobRecord) -> None:
+        """Persist/refresh job record in the DB for durability."""
+        try:
+            with SessionLocal() as db:
+                db_job = db.get(JobResult, job.id) or JobResult(id=job.id, kind=job.kind)
+                db_job.status = job.status.value
+                db_job.updated_at = dt.datetime.now(dt.timezone.utc)
+                db_job.created_at = db_job.created_at or job.created_at
+
+                # Optional metadata
+                lang = job.meta.get("language") if job.meta else None
+                detectors = job.meta.get("detectors") if job.meta else None
+                if lang:
+                    db_job.language = lang
+                if detectors:
+                    if isinstance(detectors, list):
+                        db_job.detectors = ",".join(detectors)
+                    else:
+                        db_job.detectors = str(detectors)
+
+                # Payload
+                payload = job.result or job.meta or {}
+                if job.error:
+                    payload = {**payload, "error": job.error}
+                db_job.set_payload(payload)
+
+                db.add(db_job)
+                db.commit()
+        except Exception:
+            self._logger.exception("Failed to persist job", extra={"job_id": job.id})

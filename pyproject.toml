@@ -1,6 +1,13 @@
+[tool.poetry]
+name = "DCP_Eval"
+version = "0.1.0"
+description = ""
+authors = ["Henri"]
+
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=68", "wheel","poetry-core>=1.0.0"]
 build-backend = "setuptools.build_meta"
+
 
 [project]
 name = "dcp-eval"
@@ -17,6 +24,8 @@ dependencies = [
   "uvicorn[standard]",
   "openpyxl",
   "pdfminer-six",
+  "scikit-learn",
+  "numpy<2",
   "pdfplumber",
   "pip-chill",
   "pipdeptree",
@@ -32,7 +41,7 @@ dependencies = [
   "sentencepiece",
   "sqlalchemy",
   "tomli",
-  "torch",
+  "torch==2.2.2+cpu",
   "gliner",
   "transformers",
   "uvloop",

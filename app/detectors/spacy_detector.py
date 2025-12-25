@@ -6,7 +6,7 @@ from app.models.schemas import DcpSpan
 class SpacyDetector(BaseDetector):
     name = "spacy"
 
-    def __init__(self, model: str = "fr_core_news_md"):
+    def __init__(self, model: str = "fr_core_news_sm"):
         try:
             import spacy
         except Exception as e:
