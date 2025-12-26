@@ -37,7 +37,7 @@ dependencies = [
   "pydantic-settings",
   "python-multipart",
   "paddleocr",
-  "paddlepaddle==2.6.1",
+  "paddlepaddle==2.6.2",
   "pytesseract",
   "sentencepiece",
   "sqlalchemy",
