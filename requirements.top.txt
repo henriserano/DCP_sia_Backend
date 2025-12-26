@@ -18,7 +18,8 @@ pydantic-settings
 python-multipart
 paddleocr
 paddlepaddle==2.6.2
-pytesseract
+paddlex[ocr-core]==3.3.12
+opencv-python-headless<4.9
 sentencepiece
 sqlalchemy
 tomli

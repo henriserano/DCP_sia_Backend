@@ -20,7 +20,10 @@ protobuf
 psycopg2-binary
 pydantic-settings
 python-multipart
-olmocr
+paddleocr
+paddlepaddle==2.6.2
+paddlex[ocr-core]==3.3.12
+opencv-python-headless<4.9
 sentencepiece
 sqlalchemy
 tomli

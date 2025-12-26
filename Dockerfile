@@ -14,21 +14,17 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 ARG TORCH_CPU_INDEX=https://download.pytorch.org/whl/cpu
 ENV PIP_EXTRA_INDEX_URL=${TORCH_CPU_INDEX}
 
-# Déps système minimaux + libs OCR (tesseract + opencv deps)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    tesseract-ocr \
-    libtesseract-dev \
-    poppler-utils \
-    libglib2.0-0 \
-    libsm6 \
-    libxrender1 \
-    libxext6 \
- && rm -rf /var/lib/apt/lists/*
+# (optionnel) désactive le check de version pip
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Copier le code avant l'install pour que le package soit détecté
+COPY app /app/app
+COPY pyproject.toml /app/
 
 # Install deps Python (layer stable)
-COPY pyproject.toml /app/
-RUN pip install -U pip && pip install .
+RUN pip install -U pip && pip install --no-cache-dir . \
+ && pip uninstall -y opencv-python opencv-contrib-python opencv-python-headless || true \
+ && pip install --no-cache-dir "opencv-python-headless<4.9"
 
 # Scripts nécessaires au download
 COPY scripts /app/scripts
@@ -40,12 +36,15 @@ ENV HF_HOME=/models/.hf \
 
 RUN mkdir -p /models
 
-# Pré-download HF models (optionnel : garde si tu veux absolument du "cold start" plus rapide)
-RUN python scripts/download_models.py
+ARG PRELOAD_MODELS=0
+# Pré-download HF models (optionnel : PRELOAD_MODELS=1)
+RUN if [ "$PRELOAD_MODELS" = "1" ]; then python scripts/download_models.py; fi
 
 # spaCy models (build-time)
-RUN python -m spacy download en_core_web_sm && \
-    python -m spacy download fr_core_news_sm
+RUN if [ "$PRELOAD_MODELS" = "1" ]; then \
+      python -m spacy download en_core_web_sm && \
+      python -m spacy download fr_core_news_sm; \
+    fi
 
 
 ########################
@@ -58,6 +57,7 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
+    PYTHONPATH=/app \
     HF_HOME=/models/.hf \
     TRANSFORMERS_CACHE=/models/transformers \
     SENTENCE_TRANSFORMERS_HOME=/models/sentence_transformers \
@@ -70,12 +70,24 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     NUMEXPR_NUM_THREADS=1 \
     TORCH_NUM_THREADS=1
 
+# Librairies système nécessaires pour PaddleOCR/OpenCV
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libglib2.0-0 \
+    libsm6 \
+    libxrender1 \
+    libxext6 \
+    libgl1 \
+    libglx-mesa0 \
+    libglu1-mesa \
+    libgomp1 \
+ && rm -rf /var/lib/apt/lists/*
+
 # Copier uniquement l'env python installé + modèles
 COPY --from=builder /usr/local /usr/local
 COPY --from=builder /models /models
 
 # Copier le code (change souvent)
-COPY app /app/app
+COPY app /app
 COPY pyproject.toml /app/
 
 # (Optionnel) healthcheck container-level (Cloud Run fait déjà ses checks HTTP)

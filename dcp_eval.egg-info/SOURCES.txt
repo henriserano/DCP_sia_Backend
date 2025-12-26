@@ -1,6 +1,7 @@
 LICENSE
 README.md
 pyproject.toml
+app/__init__.py
 app/main.py
 app/api/__init__.py
 app/api/deps.py

@@ -25,7 +25,10 @@ Requires-Dist: protobuf
 Requires-Dist: psycopg2-binary
 Requires-Dist: pydantic-settings
 Requires-Dist: python-multipart
-Requires-Dist: olmocr
+Requires-Dist: paddleocr
+Requires-Dist: paddlepaddle==2.6.2
+Requires-Dist: paddlex[ocr-core]==3.3.12
+Requires-Dist: opencv-python-headless<4.9
 Requires-Dist: sentencepiece
 Requires-Dist: sqlalchemy
 Requires-Dist: tomli
