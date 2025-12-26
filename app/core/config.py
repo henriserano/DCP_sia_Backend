@@ -50,7 +50,11 @@ class Settings(BaseSettings):
 
     # Models / caching
     hf_home: str = Field(default=str(Path(".hf_cache").resolve()))
-    preload_detectors: List[str] = Field(default_factory=lambda: ["regex", "presidio", "spacy", "hf"])
+    # Par défaut on précharge léger pour réduire le cold start + RAM
+    preload_detectors: List[str] = Field(default_factory=lambda: ["regex", "presidio"])
+
+    # OCR
+    ocr_backend: Literal["auto", "paddleocr", "tesseract"] = Field(default="auto")
 
 
 @lru_cache(maxsize=1)

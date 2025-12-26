@@ -16,7 +16,7 @@ PHONE = re.compile(r"""
 class RegexDetector(BaseDetector):
     name = "regex"
 
-    def detect(self, text: str, language: str = "fr") -> List[DcpSpan]:
+    def detect(self, text: str, language: str = "fr", min_score: float = 0.0) -> List[DcpSpan]:
         spans: List[DcpSpan] = []
 
         for m in EMAIL.finditer(text):
@@ -43,4 +43,4 @@ class RegexDetector(BaseDetector):
                 )
             )
 
-        return spans
+        return [s for s in spans if s.score >= min_score]

@@ -14,9 +14,16 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 ARG TORCH_CPU_INDEX=https://download.pytorch.org/whl/cpu
 ENV PIP_EXTRA_INDEX_URL=${TORCH_CPU_INDEX}
 
-# Déps système minimaux
+# Déps système minimaux + libs OCR (tesseract + opencv deps)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
+    tesseract-ocr \
+    libtesseract-dev \
+    poppler-utils \
+    libglib2.0-0 \
+    libsm6 \
+    libxrender1 \
+    libxext6 \
  && rm -rf /var/lib/apt/lists/*
 
 # Install deps Python (layer stable)

@@ -93,7 +93,9 @@ class PresidioDetector(BaseDetector):
         - essaie en language demandé
         - si KeyError / pas de recognizers, fallback en "en"
         """
-        lang = language if language in {"en", "fr"} else "en"
+        # si l'engine n'a pas la langue, fallback en en
+        supported = getattr(self.engine, "supported_languages", ["en"])
+        lang = language if language in supported else "en"
         results = self.engine.analyze(text=text, language=lang)
 
         spans: List[DcpSpan] = []

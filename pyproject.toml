@@ -5,7 +5,7 @@ description = ""
 authors = ["Henri"]
 
 [build-system]
-requires = ["setuptools>=68", "wheel","poetry-core>=1.0.0"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 
@@ -35,13 +35,14 @@ dependencies = [
   "protobuf",
   "psycopg2-binary",
   "pydantic-settings",
-  "pytesseract",
   "python-multipart",
-  "tesseract",
+  "paddleocr",
+  "paddlepaddle==2.6.1",
+  "pytesseract",
   "sentencepiece",
   "sqlalchemy",
   "tomli",
-  "torch==2.2.2+cpu",
+  "torch==2.7.0",
   "gliner",
   "transformers",
   "uvloop",
